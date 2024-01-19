@@ -66,8 +66,9 @@ fn add_world_cell_colliders(
     }
 }
 
+// TODO: should be somewhere else?
 #[derive(Component)]
-struct SpawnPoint;
+pub struct SpawnPoint;
 
 fn add_world_spawn_points(
     mut commands: Commands,

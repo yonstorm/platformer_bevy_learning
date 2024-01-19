@@ -34,8 +34,8 @@ fn map_input_to_events(
     mut action_events: EventWriter<GameAction>,
 ) {
     for (key, action) in input_mapping.key_to_action.iter() {
-        if keyboard_input.just_pressed(*key) {
-            debug!("sending action: {:?}", action);
+        if keyboard_input.just_pressed(*key) | keyboard_input.pressed(*key) {
+            //debug!("sending action: {:?}", action);
             action_events.send(*action);
         }
     }
