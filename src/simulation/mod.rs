@@ -1,10 +1,10 @@
-mod world;
 pub mod actor;
+mod world;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use self::{world::WorldPlugin, spawning::RespawnPlugin, actor::ActorPlugin};
+use self::{actor::ActorPlugin, spawning::RespawnPlugin, world::WorldPlugin};
 
 pub struct GameSimulationPlugin;
 
@@ -22,7 +22,7 @@ impl Plugin for GameSimulationPlugin {
 enum GameState {
     #[default]
     Waiting,
-    Started
+    Started,
 }
 
 mod spawning {
@@ -30,21 +30,26 @@ mod spawning {
     use bevy_rapier2d::geometry::Collider;
     use rand::seq::IteratorRandom;
 
-    use super::{GameState, world::SpawnPoint, actor::components::{Actor, Player, ActorSimulationBundle}};
+    use super::{
+        actor::components::{Actor, ActorSimulationBundle, Player},
+        world::SpawnPoint,
+        GameState,
+    };
 
     pub struct RespawnPlugin;
 
     impl Plugin for RespawnPlugin {
         fn build(&self, app: &mut App) {
             app.add_state::<GameState>();
-            app.add_systems(Update, set_game_started_state.run_if(in_state(GameState::Waiting)));
+            app.add_systems(
+                Update,
+                set_game_started_state.run_if(in_state(GameState::Waiting)),
+            );
             app.add_systems(Update, spawn_player.run_if(in_state(GameState::Started)));
         }
     }
 
-    fn set_game_started_state(
-        mut next_state: ResMut<NextState<GameState>>
-    ) {
+    fn set_game_started_state(mut next_state: ResMut<NextState<GameState>>) {
         next_state.set(GameState::Started);
     }
 
@@ -59,7 +64,7 @@ mod spawning {
             return;
         }
 
-        if let Ok(_) = player_query.get_single(){
+        if let Ok(_) = player_query.get_single() {
             debug!("Tried to spawn player, but player is already spawned");
             return;
         }
@@ -75,12 +80,8 @@ mod spawning {
         };
 
         commands.spawn((
-            Player, 
-            ActorSimulationBundle::new(
-                spawn_point.clone(), 
-                Collider::cuboid(8., 8.)
-            )
+            Player,
+            ActorSimulationBundle::new(spawn_point.clone(), Collider::cuboid(8., 8.)),
         ));
     }
-
 }

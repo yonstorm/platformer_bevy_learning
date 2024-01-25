@@ -1,7 +1,10 @@
-use bevy::{prelude::*, utils::{HashMap }};
-use bevy_rapier2d::{control::{KinematicCharacterController, KinematicCharacterControllerOutput}};
+use bevy::prelude::*;
+use bevy_rapier2d::control::{KinematicCharacterController, KinematicCharacterControllerOutput};
 
-use self::{actor_actions::{GameActionEvent, ActorAction, GameActionState, ActorActionState}, components::*};
+use self::{
+    actor_actions::{ActorAction, ActorActionState, GameActionEvent, GameActionState},
+    components::*,
+};
 
 pub mod components;
 
@@ -10,14 +13,19 @@ pub struct ActorPlugin;
 impl Plugin for ActorPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<GameActionEvent<ActorAction>>();
-        app.add_systems(Update, (collect_actor_intents,
-                                 update_actor_velocity,
-                                 actor_move_horizontal,
-                                 apply_actor_friction,
-                                 handle_actor_movement).chain());
+        app.add_systems(
+            Update,
+            (
+                collect_actor_intents,
+                update_actor_velocity,
+                actor_move_horizontal,
+                apply_actor_friction,
+                handle_actor_movement,
+            )
+                .chain(),
+        );
     }
 }
-
 
 const GRAVITY_SCALE: f32 = 15.;
 const GRAVITY: f32 = -9.8;
@@ -41,9 +49,9 @@ fn apply_actor_friction(
     mut velocity_query: Query<(&mut Velocity, &KinematicCharacterControllerOutput), With<Actor>>,
     time: Res<Time>,
 ) {
-    for (mut velocity, output) in &mut velocity_query{
+    for (mut velocity, output) in &mut velocity_query {
         // do not apply friction if in air
-        if !output.grounded{
+        if !output.grounded {
             continue;
         }
 
@@ -56,31 +64,42 @@ fn apply_actor_friction(
         // Clamp the velocity to zero if friction has reversed its direction
         if velocity.0.x.signum() != direction.signum() {
             velocity.0.x = 0.0;
-        }   
+        }
     }
 }
 
 const ACCELERATION: f32 = 2.5 * 16.0; // meters * pixelsPerMeter = meters per second
 fn actor_move_horizontal(
-    mut velocity_query: Query<(&mut Velocity,&ActorActionState, &KinematicCharacterControllerOutput), With<Actor>>,
+    mut velocity_query: Query<
+        (
+            &mut Velocity,
+            &ActorActionState,
+            &KinematicCharacterControllerOutput,
+        ),
+        With<Actor>,
+    >,
     time: Res<Time>,
 ) {
     for (mut velocity, action_state, output) in &mut velocity_query {
         let mut direction = 0.;
-        for (action, event) in &action_state.states{
+        for (action, event) in &action_state.states {
             match action {
-                ActorAction::MoveLeft | ActorAction::MoveRight => {
-                    match event.state {
-                        GameActionState::Initiated | GameActionState::OnGoing => {
-                            let right = if let ActorAction::MoveRight = action { 1. } else { 0. };
-                            let left = if let ActorAction::MoveLeft = action { 1. } else { 0. };
-                            
-                            direction = right - left;
-                        },
-                        GameActionState::Completed => {
-                        },
-                    }
+                ActorAction::MoveLeft | ActorAction::MoveRight => match event.state {
+                    GameActionState::Initiated | GameActionState::OnGoing => {
+                        let right = if let ActorAction::MoveRight = action {
+                            1.
+                        } else {
+                            0.
+                        };
+                        let left = if let ActorAction::MoveLeft = action {
+                            1.
+                        } else {
+                            0.
+                        };
 
+                        direction = right - left;
+                    }
+                    GameActionState::Completed => {}
                 },
                 _ => {}
             }
@@ -95,11 +114,11 @@ fn actor_move_horizontal(
                 if details.normal1.y == 1.0 || details.normal2.y == -1.0 {
                     continue;
                 }
-                
+
                 let side_collision = details.normal1.x.abs() > 0. || details.normal2.x.abs() > 0.;
                 if side_collision {
-                    debug!("side collision: {:?}", details.normal1.x); 
-                    accel_scale = 1. - details.normal1.x.abs(); 
+                    debug!("side collision: {:?}", details.normal1.x);
+                    accel_scale = 1. - details.normal1.x.abs();
                 }
             }
         }
@@ -117,29 +136,32 @@ fn actor_move_horizontal(
         let dynamic_acceleration = ACCELERATION / (1.0 + current_speed);
 
         // Apply acceleration
-        velocity.0.x += direction * dynamic_acceleration * time.delta_seconds() * accel_scale;   
+        velocity.0.x += direction * dynamic_acceleration * time.delta_seconds() * accel_scale;
     }
 }
 
 fn update_actor_velocity(
-    mut velocity_query: Query<(&mut Velocity,&ActorActionState, &KinematicCharacterControllerOutput), With<Actor>>,
+    mut velocity_query: Query<
+        (
+            &mut Velocity,
+            &ActorActionState,
+            &KinematicCharacterControllerOutput,
+        ),
+        With<Actor>,
+    >,
     time: Res<Time>,
 ) {
     for (mut velocity, action_state, output) in &mut velocity_query {
-        for intent in &action_state.states{
+        for intent in &action_state.states {
             match intent.0 {
-                ActorAction::Jump => {
-                    match intent.1.state {
-                        GameActionState::Initiated => {
-                            if output.grounded {
-                                velocity.0.y = f32::sqrt(JUMP_HEIGHT * (GRAVITY * GRAVITY_SCALE) * -2.);
-                            }
-                        },
-                        GameActionState::OnGoing => {
-                        },
-                        _ => {}
+                ActorAction::Jump => match intent.1.state {
+                    GameActionState::Initiated => {
+                        if output.grounded {
+                            velocity.0.y = f32::sqrt(JUMP_HEIGHT * (GRAVITY * GRAVITY_SCALE) * -2.);
+                        }
                     }
-
+                    GameActionState::OnGoing => {}
+                    _ => {}
                 },
                 _ => {}
             }
@@ -152,7 +174,7 @@ fn handle_actor_movement(
     mut player_query: Query<(&Velocity, &mut KinematicCharacterController), With<Actor>>,
     time: Res<Time>,
 ) {
-    for (velocity, mut controller) in &mut player_query{
+    for (velocity, mut controller) in &mut player_query {
         let mut translation = Vec2::new(0., 0.);
 
         translation.x = velocity.0.x;
@@ -162,9 +184,12 @@ fn handle_actor_movement(
 }
 
 pub mod actor_actions {
-    use bevy::{utils::HashMap, ecs::{component::Component, event::Event}};
+    use bevy::{
+        ecs::{component::Component, event::Event},
+        utils::HashMap,
+    };
 
-    #[derive(PartialEq,Copy,Clone, Eq)]
+    #[derive(PartialEq, Copy, Clone, Eq)]
     pub enum GameActionState {
         Initiated,
         OnGoing,
@@ -181,11 +206,11 @@ pub mod actor_actions {
     #[derive(Event, Copy, Clone)]
     pub struct GameActionEvent<T>
     where
-        T: PartialEq
+        T: PartialEq,
     {
         pub state: GameActionState,
         pub action: T,
-        //duration: f32, 
+        //duration: f32,
         //intensity: f32,
     }
 

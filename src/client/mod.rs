@@ -10,17 +10,15 @@ pub struct ClientPlugin;
 impl Plugin for ClientPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(
-            DefaultPlugins.set(
-                WindowPlugin {
+            DefaultPlugins
+                .set(WindowPlugin {
                     primary_window: Some(Window {
                         resolution: (960., 600.).into(),
                         ..Default::default()
                     }),
                     ..Default::default()
-                }
-            ).set(
-                ImagePlugin::default_nearest()
-            )
+                })
+                .set(ImagePlugin::default_nearest()),
         );
 
         app.add_plugins(InputPlugin);

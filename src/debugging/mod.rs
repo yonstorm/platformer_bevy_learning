@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::render::{RapierDebugRenderPlugin, DebugRenderMode};
+use bevy_rapier2d::render::{DebugRenderMode, RapierDebugRenderPlugin};
 
 pub struct DebugPlugin;
 

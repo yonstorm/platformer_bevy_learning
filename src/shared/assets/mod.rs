@@ -5,11 +5,11 @@ pub struct AssetLoadingPlugin;
 
 impl Plugin for AssetLoadingPlugin {
     fn build(&self, app: &mut App) {
-        info!("AssetLoadingPlugin"); 
+        info!("AssetLoadingPlugin");
         app.add_state::<AssetLoadingState>();
         app.add_loading_state(
             LoadingState::new(AssetLoadingState::Loading)
-                .continue_to_state(AssetLoadingState::Ready)
+                .continue_to_state(AssetLoadingState::Ready),
         );
     }
 }
@@ -18,6 +18,5 @@ impl Plugin for AssetLoadingPlugin {
 pub enum AssetLoadingState {
     #[default]
     Loading,
-    Ready
+    Ready,
 }
-

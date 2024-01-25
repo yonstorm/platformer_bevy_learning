@@ -1,10 +1,10 @@
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::simulation::actor::actor_actions::{GameActionEvent, ActorAction, GameActionState};
+use crate::simulation::actor::actor_actions::{ActorAction, GameActionEvent, GameActionState};
 
 #[derive(Resource)]
 struct InputMapping {
-    key_to_action: HashMap<KeyCode, ActorAction>
+    key_to_action: HashMap<KeyCode, ActorAction>,
 }
 
 impl Default for InputMapping {
@@ -23,7 +23,7 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<InputMapping>();
-        app.add_systems(Update, map_input_to_events); 
+        app.add_systems(Update, map_input_to_events);
     }
 }
 
@@ -35,21 +35,19 @@ fn map_input_to_events(
     for (key, action) in input_mapping.key_to_action.iter() {
         if keyboard_input.just_pressed(*key) {
             debug!("sending action: {:?}", action);
-            let event = GameActionEvent::<ActorAction>{
+            let event = GameActionEvent::<ActorAction> {
                 state: GameActionState::Initiated,
                 action: *action,
             };
             action_events.send(event);
-        }
-        else if keyboard_input.pressed(*key) {
-            let event = GameActionEvent::<ActorAction>{
+        } else if keyboard_input.pressed(*key) {
+            let event = GameActionEvent::<ActorAction> {
                 state: GameActionState::OnGoing,
                 action: *action,
             };
             action_events.send(event);
-        }
-        else if keyboard_input.just_released(*key) {
-            let event = GameActionEvent::<ActorAction>{
+        } else if keyboard_input.just_released(*key) {
+            let event = GameActionEvent::<ActorAction> {
                 state: GameActionState::Completed,
                 action: *action,
             };
