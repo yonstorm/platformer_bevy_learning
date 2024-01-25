@@ -11,7 +11,7 @@ pub struct GameSimulationPlugin;
 impl Plugin for GameSimulationPlugin {
     fn build(&self, app: &mut App) {
         // TODO: does physics belong here? is this the best place?
-        app.add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(8.));
+        app.add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(16.));
         app.add_plugins(WorldPlugin);
         app.add_plugins(RespawnPlugin);
         app.add_plugins(ActorPlugin);
@@ -30,7 +30,7 @@ mod spawning {
     use bevy_rapier2d::geometry::Collider;
     use rand::seq::IteratorRandom;
 
-    use super::{GameState, actor::{Player, Actor, ActorSimulationBundle}, world::SpawnPoint};
+    use super::{GameState, world::SpawnPoint, actor::components::{Actor, Player, ActorSimulationBundle}};
 
     pub struct RespawnPlugin;
 
@@ -54,6 +54,7 @@ mod spawning {
         spawn_query: Query<&Transform, With<SpawnPoint>>,
         input: Res<Input<KeyCode>>,
     ) {
+        // TODO: placeholder spawning mechanic
         if !input.just_pressed(KeyCode::Space) {
             return;
         }
