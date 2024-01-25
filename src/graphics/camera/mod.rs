@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
-use crate::simulation::actor::Player;
+use crate::simulation::actor::components::Player;
+
 
 pub struct CameraPlugin;
 
@@ -13,7 +14,7 @@ impl Plugin for CameraPlugin {
 
 fn setup_camera(mut commands: Commands){
     let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 0.16;
+    camera.projection.scale = 0.5;
     commands.spawn((camera, MainCamera));
 }
 

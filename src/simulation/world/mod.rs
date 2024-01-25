@@ -32,7 +32,7 @@ impl Plugin for WorldPlugin {
 
 #[derive(AssetCollection, Resource)]
 struct LevelAsset {
-    #[asset(path = "map.ldtk")]
+    #[asset(path = "testmap.ldtk")]
     handle: Handle<LdtkProject>
 }
 
@@ -58,7 +58,7 @@ fn add_world_cell_colliders(
     cell_query.for_each(|entity| {
         count += 1;
         commands.entity(entity)
-            .insert(Collider::cuboid(4., 4.));
+            .insert(Collider::cuboid(16., 16.));
     });
 
     if count > 0 {
